@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email Intelligence Platform</title>
+    <meta name="description" content="Extract, validate, and sort email addresses at scale.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/lipis/flag-icons@7.0.0/css/flag-icons.min.css" />
+    <link rel="stylesheet" href="/static/css/app.css">
+    <script>
+        if (localStorage.getItem('theme') === 'dark' || (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.setAttribute('data-theme', 'dark');
+        }
+    </script>
+</head>
+
+<body>
+    <div class="app-shell">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <!-- Brand — not clickable -->
+            <div class="brand-container" style="cursor:default">
+                <div class="brand-icon" style="font-size:17px;font-weight:900;letter-spacing:-.5px;font-family:'Inter',sans-serif">H</div>
+                <div class="brand-text">Hunter</div>
+            </div>
+            <div class="nav-section">
+                <div class="nav-item active" data-open-view="dashboard">
+                    <div class="nav-icon"><i data-lucide="layout-dashboard"></i></div>
+                    <span>Dashboard</span>
+                </div>
+            </div>
+            <div class="nav-section">
+                <div class="nav-section-title">Verification</div>
+                <div class="nav-item" data-open-view="bulk">
+                    <div class="nav-icon"><i data-lucide="list-checks"></i></div>
+                    <span>Bulk Validation</span>
+                </div>
+                <div class="nav-item" data-open-view="single">
+                    <div class="nav-icon"><i data-lucide="mail-check"></i></div>
+                    <span>Single Validation</span>
+                </div>
+            </div>
+            <div class="nav-section">
+                <div class="nav-section-title">Tools</div>
+                <div class="nav-item" data-open-view="scrape">
+                    <div class="nav-icon"><i data-lucide="radar"></i></div>
+                    <span>Extract</span>
+                </div>
+                <div class="nav-item" data-open-view="sort">
+                    <div class="nav-icon"><i data-lucide="globe"></i></div>
+                    <span>Sort by Country</span>
+                </div>
+            </div>
+            <div class="sidebar-footer">
+                <div class="theme-row">
+                    <span class="theme-label">Dark Mode</span>
+                    <button class="theme-btn" onclick="toggleTheme()" id="themeToggleBtn">
+                        <i data-lucide="moon"></i>
+                    </button>
+                </div>
+                <div class="tab-status">
+                    <span class="led" id="globalLed"></span>
+                    <span id="globalStatusText">System idle</span>
+                </div>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <!-- Dashboard -->
+            <div class="view" id="viewDashboard">
+                <div class="db-welcome">
+                    <h1>Welcome back 👋</h1>
+                    <p>Here's an overview of your email intelligence activity.</p>
+                </div>
+                <div class="db-stat-grid">
+                    <div class="db-stat">
+                        <div class="db-stat-icon blue"><i data-lucide="list-checks"></i></div>
+                        <div>
+                            <div class="db-stat-label">Jobs Run</div>
+                            <div class="db-stat-value" id="dashStatJobs">0</div>
+                        </div>
+                    </div>
+                    <div class="db-stat">
+                        <div class="db-stat-icon green"><i data-lucide="mail-check"></i></div>
+                        <div>
+                            <div class="db-stat-label">Valid Emails</div>
+                            <div class="db-stat-value" id="dashStatEmails">0</div>
+                        </div>
+                    </div>
+                    <div class="db-stat">
+                        <div class="db-stat-icon violet"><i data-lucide="clock"></i></div>
+                        <div>
+                            <div class="db-stat-label">Last Activity</div>
+                            <div class="db-stat-value" id="dashStatLast" style="font-size:15px;margin-top:6px">&mdash;
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="db-grid">
+                    <div class="db-panel">
+                        <div class="db-panel-head">
+                            <span class="db-panel-title">Recent Jobs</span>
+                            <span class="db-panel-badge" id="dashHistoryBadge">0 jobs</span>
+                        </div>
+                        <div class="db-panel-body" id="dashboardHistory">
+                            <div class="result-empty">No completed jobs yet.</div>
+                        </div>
+                    </div>
+                    <div class="db-panel">
+                        <div class="db-panel-head"><span class="db-panel-title">Quick Actions</span></div>
+                        <div class="db-qa-grid">
+                            <div class="db-qa-btn" onclick="showView('bulk')" style="color:var(--primary)"><i
+                                    data-lucide="layers"></i><span class="db-qa-label">Bulk Validate</span></div>
+                            <div class="db-qa-btn" onclick="showView('single')" style="color:var(--violet)"><i
+                                    data-lucide="search"></i><span class="db-qa-label">Single Check</span></div>
+                            <div class="db-qa-btn" onclick="showView('scrape')" style="color:var(--success)"><i
+                                    data-lucide="radar"></i><span class="db-qa-label">Extract</span></div>
+                            <div class="db-qa-btn" onclick="showView('sort')" style="color:var(--primary)"><i
+                                    data-lucide="globe"></i><span class="db-qa-label">Sort Country</span></div>
+                            <div class="db-qa-btn" onclick="downloadEmails()" style="color:var(--muted)"><i
+                                    data-lucide="download"></i><span class="db-qa-label">Download TXT</span></div>
+                            <div class="db-qa-btn" onclick="clearDashboardHistory()" style="color:var(--danger)"><i
+                                    data-lucide="trash-2"></i><span class="db-qa-label">Clear History</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bulk Validation -->
+            <div class="view" id="viewBulk">
+                <div class="page-header">
+                    <h1>Bulk Validation</h1>
+                    <p>Upload an email list, filter by state, and export confirmed results.</p>
+                </div>
+                <div class="card">
+                    <div class="card-body">
+                        <div class="upload-bar">
+                            <div class="filter-tabs" role="tablist">
+                                <button class="filter-tab active" data-filter="all">All <span class="filter-tab-count"
+                                        id="countAll">0</span></button>
+                                <button class="filter-tab" data-filter="completed">Completed <span
+                                        class="filter-tab-count" id="countCompleted">0</span></button>
+                                <button class="filter-tab" data-filter="processing">Processing <span
+                                        class="filter-tab-count" id="countProcessing">0</span></button>
+                                <button class="filter-tab" data-filter="unprocessed">Unprocessed <span
+                                        class="filter-tab-count" id="countUnprocessed">0</span></button>
+                            </div>
+                            <label class="btn-upload" id="lblBulkFile" for="inBulkFile"><i
+                                    data-lucide="upload-cloud"></i><span>Upload List</span></label>
+                            <input type="file" id="inBulkFile" accept=".txt">
+                        </div>
+                        <div class="file-hint" id="bulkFileName">No email list selected</div>
+                        <div class="form-grid">
+                            <div class="field"><label>Validation Mode</label><select id="inBulkMode">
+                                    <option value="simple">O365 tenant</option>
+                                    <option value="general" selected>General IdP</option>
+                                </select></div>
+                            <div class="field"><label>Provider Filter</label><input type="text" id="inBulkProvider"
+                                    placeholder="gmail, yahoo, company.com"></div>
+                            <div class="field"><label>Concurrency</label><select id="inBulkThreads">
+                                    <option value="1">1 thread</option>
+                                    <option value="3">3 threads</option>
+                                    <option value="5" selected>5 threads</option>
+                                    <option value="10">10 threads</option>
+                                    <option value="20">20 threads</option>
+                                    <option value="30">30 threads</option>
+                                </select></div>
+                        </div>
+                        <div class="btn-row" id="bulkBtnRow" style="grid-template-columns:1fr 1fr 1fr">
+                            <button class="btn btn-primary" id="btnBulkStart"><i data-lucide="play"></i><span
+                                    class="btn-text">Start Validation</span></button>
+                            <button class="btn btn-warning" id="btnBulkPause"><i data-lucide="pause"></i><span
+                                    class="btn-text">Pause</span></button>
+                            <button class="btn btn-danger" id="btnBulkStop"><i data-lucide="octagon-x"></i><span
+                                    class="btn-text">Abort</span></button>
+                            <button class="btn" id="btnBulkClear" onclick="clearBulkResults()"
+                                style="display:none;color:var(--danger);border-color:rgba(239,68,68,.3);background:var(--danger-soft)"><i
+                                    data-lucide="trash-2"></i><span class="btn-text">Clear Results</span></button>
+                        </div>
+                        <div class="status-bar">
+                            <div class="status-cell">
+                                <div class="lbl">Job Status</div>
+                                <div class="val" id="lblBulkStatus">IDLE</div>
+                            </div>
+                            <div class="status-cell">
+                                <div class="lbl">Uploaded</div>
+                                <div class="val" id="lblBulkUploaded">0</div>
+                            </div>
+                            <div class="status-cell">
+                                <div class="lbl">Verified Valid</div>
+                                <div class="val ok" id="lblBulkCount">0</div>
+                            </div>
+                        </div>
+
+                        <div class="results-table">
+                            <div class="results-head"><span>Email</span><span>Status</span><span>Detail</span></div>
+                            <div class="results-body" id="bulkResults">
+                                <div class="result-empty">Upload a TXT file to prepare the batch.</div>
+                            </div>
+                        </div>
+                        <div class="progress-wrap" id="bulkProgressSection">
+                            <div class="progress-labels"><span>Progress</span><span id="bulkProgressText">0%</span>
+                            </div>
+                            <div class="progress-track">
+                                <div id="bulkProgressBar" class="progress-fill"></div>
+                            </div>
+                        </div>
+                        <div class="console-toggle"><label><input type="checkbox"
+                                    onchange="document.getElementById('logBulk').style.display=this.checked?'block':'none'">
+                                Show Live Console</label></div>
+                        <div class="console" id="logBulk" style="display:none">
+                            <div class="line muted">// Bulk validation console ready</div>
+                        </div>
+                        <div class="export-footer">
+                            <div class="lbl">Export</div>
+                            <div class="export-btns" id="exportBulk">
+                                <button class="btn-icon" onclick="copyEmails()"><i data-lucide="copy"></i> Copy</button>
+                                <button class="btn-icon" onclick="downloadEmails()"><i data-lucide="download"></i> All
+                                    Valid</button>
+                                <button class="btn-icon" id="exportSSOBtn" onclick="downloadSSO()"
+                                    style="display:none;color:var(--primary);border-color:var(--primary)"><i
+                                        data-lucide="shield-check"></i> SSO Only <span id="exportSSOBadge"
+                                        style="background:var(--primary-soft);padding:1px 7px;border-radius:999px;font-size:11px;font-weight:800">0</span></button>
+                                <button class="btn-icon" id="exportADFSBtn" onclick="downloadADFS()"
+                                    style="display:none;color:var(--violet);border-color:var(--violet)"><i
+                                        data-lucide="building-2"></i> ADFS / Okta <span id="exportADFSBadge"
+                                        style="background:var(--violet-soft);padding:1px 7px;border-radius:999px;font-size:11px;font-weight:800">0</span></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Single Validation -->
+            <div class="view" id="viewSingle">
+                <div class="page-header">
+                    <h1>Single Validation</h1>
+                    <p>Validate one email address and see a full breakdown of results.</p>
+                </div>
+                <div class="card">
+                    <div class="card-body">
+                        <div class="form-grid">
+                            <div class="field" style="grid-column:span 2"><label>Email Address</label><input
+                                    type="email" id="inSingleEmail" placeholder="name@example.com"></div>
+                            <div class="field"><label>Mode</label><select id="inSingleMode">
+                                    <option value="simple">O365 tenant</option>
+                                    <option value="general" selected>General IdP</option>
+                                </select></div>
+                        </div>
+                        <div class="btn-row">
+                            <button class="btn btn-primary" id="btnSingleStart"><i data-lucide="play"></i><span
+                                    class="btn-text">Validate Email</span></button>
+                            <button class="btn btn-warning" id="btnSinglePause"><i data-lucide="pause"></i><span
+                                    class="btn-text">Pause</span></button>
+                            <button class="btn btn-danger" id="btnSingleStop"><i data-lucide="octagon-x"></i><span
+                                    class="btn-text">Abort</span></button>
+                        </div>
+                        <div class="status-bar">
+                            <div class="status-cell">
+                                <div class="lbl">Job Status</div>
+                                <div class="val" id="lblSingleStatus">IDLE</div>
+                            </div>
+                            <div class="status-cell">
+                                <div class="lbl">Input Limit</div>
+                                <div class="val">1</div>
+                            </div>
+                            <div class="status-cell">
+                                <div class="lbl">Verified Valid</div>
+                                <div class="val ok" id="lblSingleCount">0</div>
+                            </div>
+                        </div>
+                        <div id="singleResultContainer" style="display:none">
+                            <div class="analysis-card" id="singleAnalysisCard"></div>
+                        </div>
+                        <div class="console-toggle"><label><input type="checkbox"
+                                    onchange="document.getElementById('logSingle').style.display=this.checked?'block':'none'">
+                                Show Live Console</label></div>
+                        <div class="console" id="logSingle" style="display:none">
+                            <div class="line muted">// Single validation console ready</div>
+                        </div>
+                        <div class="export-footer">
+                            <div class="lbl">Output</div>
+                            <div class="export-btns" id="exportSingle">
+                                <button class="btn-icon" onclick="copyEmails()"><i data-lucide="copy"></i> Copy</button>
+                                <button class="btn-icon" onclick="downloadEmails()"><i data-lucide="download"></i>
+                                    TXT</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Extractor -->
+            <div class="view" id="viewScrape">
+                <div class="page-header">
+                    <h1>Email Extractor</h1>
+                    <p>Search, crawl pages, and extract email addresses automatically.</p>
+                </div>
+                <div class="card">
+                    <div class="card-body">
+                        <div class="form-grid" style="grid-template-columns:2fr 1fr">
+                            <div class="field"><label>Target Query</label><input type="text" id="inQuery"
+                                    placeholder="site:company.com email"></div>
+                            <div class="field"><label>Depth</label><select id="inPages">
+                                    <option value="1">1 page</option>
+                                    <option value="3" selected>3 pages</option>
+                                    <option value="5">5 pages</option>
+                                    <option value="10">10 pages</option>
+                                    <option value="999">Max depth</option>
+                                </select></div>
+                        </div>
+                        <div class="btn-row">
+                            <button class="btn btn-primary" id="btnScrapeStart"><i data-lucide="play"></i><span
+                                    class="btn-text">Start Extract</span></button>
+                            <button class="btn btn-warning" id="btnScrapePause"><i data-lucide="pause"></i><span
+                                    class="btn-text">Pause</span></button>
+                            <button class="btn btn-danger" id="btnScrapeStop"><i data-lucide="octagon-x"></i><span
+                                    class="btn-text">Abort</span></button>
+                        </div>
+                        <div class="status-bar">
+                            <div class="status-cell">
+                                <div class="lbl">Job Status</div>
+                                <div class="val" id="lblScrapeStatus">IDLE</div>
+                            </div>
+                            <div class="status-cell">
+                                <div class="lbl">Depth</div>
+                                <div class="val" id="lblScrapeDepth">3</div>
+                            </div>
+                            <div class="status-cell">
+                                <div class="lbl">Extracted</div>
+                                <div class="val ok" id="lblScrapeCount">0</div>
+                            </div>
+                        </div>
+                        <div class="console-toggle"><label><input type="checkbox"
+                                    onchange="document.getElementById('logScrape').style.display=this.checked?'block':'none'">
+                                Show Live Console</label></div>
+                        <div class="console" id="logScrape" style="display:none">
+                            <div class="line muted">// Extract console ready</div>
+                        </div>
+                        <div class="export-footer">
+                            <div class="lbl">Output</div>
+                            <div class="export-btns" id="exportScrape">
+                                <button class="btn-icon" onclick="copyEmails()"><i data-lucide="copy"></i> Copy</button>
+                                <button class="btn-icon" onclick="downloadEmails()"><i data-lucide="download"></i>
+                                    TXT</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sorter -->
+            <div class="view" id="viewSort">
+                <div class="page-header">
+                    <h1>Sort by Country</h1>
+                    <p>Upload a TXT list — emails are classified via provider database, MX lookup, and IP geolocation.
+                    </p>
+                </div>
+                <div class="card">
+                    <div class="card-body">
+                        <div class="sorter-drop-zone" id="sorterDropZone">
+                            <i data-lucide="upload-cloud" class="sdz-icon" style="width:40px;height:40px"></i>
+                            <p class="sdz-title">Drop your email list here</p>
+                            <p class="sdz-sub">or click to browse &mdash; accepts .txt files</p>
+                            <input type="file" id="sorterFileInput" accept=".txt">
+                        </div>
+                        <div id="sorterSummaryBar" class="sorter-summary-bar" style="display:none">
+                            <span class="s-total" id="sorterTotalCount">0 emails</span>
+                            <span class="s-sep">&bull;</span>
+                            <span class="s-countries" id="sorterCountryCount">0 countries</span>
+                            <span class="accuracy-badge">~90-95% accuracy</span>
+                            <span id="sorterGeoProgress" class="sorter-geo-progress" style="margin-left:8px"></span>
+                            <div style="margin-left:auto;display:flex;gap:8px">
+                                <button class="btn-icon" id="sorterReset"><i data-lucide="refresh-cw"></i> New
+                                    List</button>
+                                <button class="btn-icon" onclick="downloadAllSorted()"><i data-lucide="download"></i>
+                                    Export All</button>
+                            </div>
+                        </div>
+                        <div class="sorter-panel" id="sorterPanel" style="display:none;display:flex">
+                            <div class="sorter-country-list" id="sorterCountryList"></div>
+                            <div class="sorter-email-panel">
+                                <div class="sorter-email-header" id="sorterEmailHeader">Select a country</div>
+                                <div class="sorter-email-list" id="sorterEmailList"></div>
+                                <div class="sorter-action-bar">
+                                    <button class="btn-icon" id="sorterDlSelected"><i data-lucide="download"></i>
+                                        Download This Country</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div class="toast" id="toast"></div>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="/js/app.js"></script>
+    <script src="/js/sorter.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            if (typeof initSorter === 'function') initSorter();
+            const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+            const btn = document.getElementById('themeToggleBtn');
+            if (btn) btn.innerHTML = isDark ? '<i data-lucide="sun"></i>' : '<i data-lucide="moon"></i>';
+            if (window.lucide) window.lucide.createIcons();
+        });
+
+        function toggleTheme() {
+            const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+            const btn = document.getElementById('themeToggleBtn');
+            if (isDark) {
+                document.documentElement.removeAttribute('data-theme');
+                localStorage.setItem('theme', 'light');
+                btn.innerHTML = '<i data-lucide="moon"></i>';
+            } else {
+                document.documentElement.setAttribute('data-theme', 'dark');
+                localStorage.setItem('theme', 'dark');
+                btn.innerHTML = '<i data-lucide="sun"></i>';
+            }
+            if (window.lucide) window.lucide.createIcons();
+        }
+    </script>
+</body>
+
+</html>
