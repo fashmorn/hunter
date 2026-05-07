@@ -17,6 +17,9 @@
         if (localStorage.getItem('theme') === 'dark' || (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
             document.documentElement.setAttribute('data-theme', 'dark');
         }
+        const _savedView = sessionStorage.getItem('activeView') || 'dashboard';
+        const _viewId = 'view' + _savedView.charAt(0).toUpperCase() + _savedView.slice(1);
+        document.write('<style id="initialViewStyle">.view { display: none; } #' + _viewId + ' { display: block; } .nav-item[data-open-view="' + _savedView + '"] { background: var(--surface-hover); color: var(--text-main); font-weight: 600; } .nav-item[data-open-view="' + _savedView + '"] .nav-icon { color: var(--primary); }</style>');
     </script>
 </head>
 
@@ -30,7 +33,7 @@
                 <div class="brand-text">Hunter</div>
             </div>
             <div class="nav-section">
-                <div class="nav-item active" data-open-view="dashboard">
+                <div class="nav-item" data-open-view="dashboard">
                     <div class="nav-icon"><i data-lucide="layout-dashboard"></i></div>
                     <span>Dashboard</span>
                 </div>
