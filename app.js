@@ -146,6 +146,9 @@ const fallbackIconPaths = {
         });
 
         eBulk.inFile.addEventListener('change', async (event) => {
+            const clearBtn = document.getElementById('btnBulkClear');
+            if (clearBtn) { clearBtn.style.display = 'none'; const row = document.getElementById('bulkBtnRow'); if (row) row.style.gridTemplateColumns = '1fr 1fr 1fr'; }
+
             if (!event.target.files.length) {
                 uploadedBulkEmails = [];
                 bulkRecords.clear();
@@ -223,6 +226,8 @@ const fallbackIconPaths = {
         }
 
         function showView(name) {
+            const initStyle = document.getElementById('initialViewStyle');
+            if (initStyle) initStyle.remove();
             const target = views[name] ? name : 'dashboard';
             Object.entries(views).forEach(([key, view]) => {
                 view.classList.toggle('active', key === target);
@@ -693,7 +698,7 @@ const fallbackIconPaths = {
                                         setStatus(ui, 'COMPLETED', 'var(--success)');
                                         // Show the Clear Results button
                                         const clearBtn = document.getElementById('btnBulkClear');
-                                        if (clearBtn) { clearBtn.style.display = 'inline-flex'; const row = document.getElementById('bulkBtnRow'); if (row) row.style.gridTemplateColumns = '1fr 1fr 1fr 1fr'; if (window.lucide) window.lucide.createIcons(); }
+                                        if (clearBtn && bulkRecords.size > 0) { clearBtn.style.display = 'inline-flex'; const row = document.getElementById('bulkBtnRow'); if (row) row.style.gridTemplateColumns = '1fr 1fr 1fr 1fr'; if (window.lucide) window.lucide.createIcons(); }
                                         
                                         if (allEmails.size > 0 && activeJobType) {
                                             saveJobToHistory(activeJobType, allEmails.size, [...allEmails]);
