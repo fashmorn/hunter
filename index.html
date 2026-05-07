@@ -12,7 +12,7 @@
         href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/lipis/flag-icons@7.0.0/css/flag-icons.min.css" />
-    <link rel="stylesheet" href="/static/css/app.css">
+    <link rel="stylesheet" href="app.css">
     <script>
         if (localStorage.getItem('theme') === 'dark' || (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
             document.documentElement.setAttribute('data-theme', 'dark');
@@ -402,8 +402,8 @@
 
     <div class="toast" id="toast"></div>
     <script src="https://unpkg.com/lucide@latest"></script>
-    <script src="/js/app.js"></script>
-    <script src="/js/sorter.js"></script>
+    <script src="app.js"></script>
+    <script src="sorter.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             if (typeof initSorter === 'function') initSorter();
